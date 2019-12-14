@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8850964515703602683}
   - component: {fileID: 8850964515703602680}
   - component: {fileID: 8850964515703602681}
+  - component: {fileID: 114394970758564916}
   m_Layer: 5
   m_Name: PowerPlantButton
   m_TagString: Untagged
@@ -113,3 +114,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &114394970758564916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8850964515703602679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd39754fd6e556844bb9909606e41484, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

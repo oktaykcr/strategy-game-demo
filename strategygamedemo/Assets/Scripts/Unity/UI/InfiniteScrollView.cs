@@ -20,9 +20,6 @@ public class InfiniteScrollView : MonoBehaviour
     [SerializeField]
     private int _spacing;
 
-    [SerializeField]
-    private int _scrollSensitivity = 0;
-
     private int _columnCount;
 
     private List<List<GameObject>> _objectPools;
