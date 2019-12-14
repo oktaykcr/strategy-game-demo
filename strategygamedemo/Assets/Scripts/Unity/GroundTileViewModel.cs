@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-
+﻿
 public class GroundTileViewModel : SpatialViewModel<IGround>
 {
 
@@ -14,4 +13,7 @@ public class GroundTileViewModel : SpatialViewModel<IGround>
         set => DataContext.IsWalkable = value;
     }
 
+    public float XPos => DataContext.XPos;
+
+    public float YPos => DataContext.YPos;
 }

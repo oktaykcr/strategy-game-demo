@@ -22,9 +22,7 @@ public class BuildingViewModel : SpatialViewModel<IProduct>
             if (Input.GetMouseButtonDown(0))
             {
                 RaycastHit2D[] hits = Physics2D.BoxCastAll((Vector2) transform.position + _collider.offset, _collider.size, transform.eulerAngles.z,
-                    Vector2.zero, Mathf.Infinity, _tilesLayer);
-
-                Debug.Log(hits.Length);
+                    Vector2.zero, 2f, _tilesLayer);
 
                 if (hits.Length > 0 && CheckTheAreaIsSuitableForBuild(hits))
                 {
