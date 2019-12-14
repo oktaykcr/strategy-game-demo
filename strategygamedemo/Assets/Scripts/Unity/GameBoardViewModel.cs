@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class GameBoardViewModel : Singleton<GameBoardViewModel>
 {
     public Vector2 MousePosition { get; private set; }
+
+    private GameObject _selectedProduct;
 
     #region Map
 
@@ -32,20 +35,20 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
 
     #endregion
 
-
-    private void Awake()
-    {
-        _groundTile = _groundPrefab.GetComponent<SpriteRenderer>().sprite;
-    }
-
     private void Start()
     {
+        _groundTile = _groundPrefab.GetComponent<SpriteRenderer>().sprite;
         CreateMap();
     }
 
     private void Update()
     {
         MousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            DeselectProduct();
+        }
     }
 
     private void CreateMap()
@@ -64,6 +67,28 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
             }
         }
         map.AddComponent<BoxCollider2D>();
+    }
+
+    public void SelectProduct(GameObject product)
+    {
+        _selectedProduct = product;
+    }
+
+    public void DeselectProduct()
+    {
+        if (_selectedProduct != null)
+        {
+            if (_selectedProduct.name.Contains("Template"))
+            {
+                Destroy(_selectedProduct);
+            }
+            _selectedProduct = null;
+        }
+    }
+
+    public bool IsProductSelected()
+    {
+        return _selectedProduct != null;
     }
 
 }
