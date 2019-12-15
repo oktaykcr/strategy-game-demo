@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class SpatialViewModel<T> : MonoBehaviour where T : ISpatial
 {
@@ -15,6 +12,7 @@ public abstract class SpatialViewModel<T> : MonoBehaviour where T : ISpatial
     public void Initialize(T dataContext)
     {
         this.DataContext = dataContext;
+
         SpriteRenderer = this.GetComponent<SpriteRenderer>();
 
         DataContext.XSize = SpriteRenderer.bounds.size.x;

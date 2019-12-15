@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class GameBoardViewModel : Singleton<GameBoardViewModel>
 {
@@ -37,7 +38,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
 
     #endregion
 
-    private GroundTileViewModel[,] _grounds;
+    private GroundTileViewModel[,] _groundTileModels;
 
     private void Start()
     {
@@ -54,26 +55,20 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
             DeselectProduct();
         }
 
-        if (Input.GetMouseButtonDown(0) && _selectedProduct == null && IsMouseInGameBoard())
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            Debug.Log(_selectedProduct.name);
+        }
+
+        if (Input.GetMouseButtonDown(0) && IsMouseInGameBoard())
         {
             RaycastHit2D hit = Physics2D.Raycast(MousePosition, Vector2.zero, 2f);
             if (hit.collider != null)
             {
                 var hitObject = hit.collider.gameObject;
-                if (hitObject.tag.Equals("Building"))
+                if (hitObject.tag.Equals("Building") || hitObject.tag.Equals("Soldier"))
                 {
-                    switch (hitObject.name)
-                    {
-                        case "Barrack":
-                            GameManager.Instance.ShowProductInformation(GameManager.Products.Barrack);
-                            break;
-                        case "PowerPlant":
-                            GameManager.Instance.ShowProductInformation(GameManager.Products.PowerPlant);
-                            break;
-                        case "SoldierUnit":
-                            GameManager.Instance.ShowProductInformation(GameManager.Products.SoldierUnit);
-                            break;
-                    }
+                    SelectProduct(hitObject);
                 }
             }
             else
@@ -90,7 +85,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
     private void CreateMap()
     {
         var map = new GameObject("map");
-        _grounds = new GroundTileViewModel[_height, _width];
+        _groundTileModels = new GroundTileViewModel[_width, _height];
         for (var x = 0; x < _width; x++)
         {
             for (var y = 0; y < _height; y++)
@@ -100,8 +95,8 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
 
                 var ground = new Ground(xPos, yPos, 1f, ""+x+y, true);
                 var created = ViewFactory.Create<IGround, GroundTileViewModel>(ground, _groundPrefab, map.transform);
-                created.name = "" + x + y;
-                _grounds[y, x] = created.GetComponent<GroundTileViewModel>();
+                created.name = x +"_"+ y;
+                _groundTileModels[x, y] = created.GetComponent<GroundTileViewModel>();
             }
         }
     }
@@ -119,6 +114,8 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
                 GameManager.Instance.ShowProductInformation(GameManager.Products.Barrack);
             else if(_selectedProduct.name.Contains("PowerPlant"))
                 GameManager.Instance.ShowProductInformation(GameManager.Products.PowerPlant);
+            else if (_selectedProduct.name.Contains("SoldierUnit"))
+                GameManager.Instance.ShowProductInformation(GameManager.Products.SoldierUnit);
         }
     }
 
@@ -162,5 +159,32 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Creates a soldier around the selected barrack
+    /// </summary>
+    public void SpawnSoldier()
+    {
+        if (_selectedProduct != null && _selectedProduct.name.Contains("Barrack"))
+        {
+            GameObject emptyGroundTile = _selectedProduct.GetComponent<BuildingViewModel>()
+                .GetEmptyGroundTileNearTheSelectedBarrack(_groundTileModels);
+
+            if (emptyGroundTile != null)
+            {
+                emptyGroundTile.GetComponent<GroundTileViewModel>().IsWalkable = false;
+
+                IProduct product = new SoldierUnit("Soldier Unit", ProductType.Soldier, false, 1f);
+                var createdProduct = ViewFactory.Create<IProduct, SoldierViewModel>(product, Resources.Load<GameObject>("Prefabs/SoldierUnit"), null);
+                createdProduct.name = "SoldierUnit";
+                createdProduct.GetComponent<SoldierViewModel>().SetPosition(new Vector2(emptyGroundTile.transform.position.x, emptyGroundTile.transform.position.y));
+            }
+            else
+            {
+                GameManager.Instance.GiveNotSuitableAreaForSpawnWarning();
+            }
+
+        }
     }
 }

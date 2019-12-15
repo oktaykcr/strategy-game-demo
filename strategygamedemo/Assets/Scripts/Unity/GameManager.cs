@@ -36,7 +36,7 @@ public class GameManager : Singleton<GameManager>
     private Text _selectedProductText;
 
     [SerializeField]
-    private Image _selectedProductProductionImage;
+    private Button _selectedProductProductionButton;
 
     [SerializeField]
     private Text _selectedProductProductionText;
@@ -51,6 +51,14 @@ public class GameManager : Singleton<GameManager>
         if (_alertText.text.Equals(""))
         {
             StartCoroutine(ShowMessage("The area is not suitable for placing!"));
+        }
+    }
+
+    public void GiveNotSuitableAreaForSpawnWarning()
+    {
+        if (_alertText.text.Equals(""))
+        {
+            StartCoroutine(ShowMessage("The area is not suitable for spawning a soldier!"));
         }
     }
 
@@ -74,7 +82,8 @@ public class GameManager : Singleton<GameManager>
             case Products.Barrack:
                 _informationProductionPanel.SetActive(true);
                 _selectedProductImage.sprite = _productSprites[0];
-                _selectedProductProductionImage.sprite = _productSprites[2];
+                _selectedProductProductionButton.image.sprite = _productSprites[2];
+                _selectedProductProductionButton.name = "SoldierUnitButton";
                 _selectedProductProductionText.text = "Soldier Unit";
                 break;
             case Products.PowerPlant:
