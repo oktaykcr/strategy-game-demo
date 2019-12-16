@@ -38,7 +38,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
 
     #endregion
 
-    private GroundTileViewModel[,] _groundTileModels;
+    private GroundTileViewModel[,] _createdGroundTileModels;
 
     private void Start()
     {
@@ -50,16 +50,32 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
     {
         MousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
+        // If the mouse on the game board and click right button
+        if (Input.GetMouseButtonDown(1) && IsMouseInGameBoard())
+        {
+            // if selected product is Soldier
+            if (_selectedProduct != null && _selectedProduct.tag.Equals("Soldier"))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(MousePosition, Vector2.zero, 2f);
+                if (hit.collider != null)
+                {
+                    var hitObject = hit.collider.gameObject;
+                    if (hitObject.tag.Equals("Ground") && hitObject.GetComponent<GroundTileViewModel>().IsWalkable)
+                    {
+                        SoldierViewModel soldierViewModel = _selectedProduct.GetComponent<SoldierViewModel>();
+                        soldierViewModel.SetEndGroundTile(hitObject);
+                    }
+                }
+            }
+        }
+
+        // if any object selected then Deselect Product
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             DeselectProduct();
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            Debug.Log(_selectedProduct.name);
-        }
-
+        // Select Product on the Map
         if (Input.GetMouseButtonDown(0) && IsMouseInGameBoard())
         {
             RaycastHit2D hit = Physics2D.Raycast(MousePosition, Vector2.zero, 2f);
@@ -85,7 +101,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
     private void CreateMap()
     {
         var map = new GameObject("map");
-        _groundTileModels = new GroundTileViewModel[_width, _height];
+        _createdGroundTileModels = new GroundTileViewModel[_width, _height];
         for (var x = 0; x < _width; x++)
         {
             for (var y = 0; y < _height; y++)
@@ -96,7 +112,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
                 var ground = new Ground(xPos, yPos, 1f, ""+x+y, true);
                 var created = ViewFactory.Create<IGround, GroundTileViewModel>(ground, _groundPrefab, map.transform);
                 created.name = x +"_"+ y;
-                _groundTileModels[x, y] = created.GetComponent<GroundTileViewModel>();
+                _createdGroundTileModels[x, y] = created.GetComponent<GroundTileViewModel>();
             }
         }
     }
@@ -169,7 +185,7 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
         if (_selectedProduct != null && _selectedProduct.name.Contains("Barrack"))
         {
             GameObject emptyGroundTile = _selectedProduct.GetComponent<BuildingViewModel>()
-                .GetEmptyGroundTileNearTheSelectedBarrack(_groundTileModels);
+                .GetEmptyGroundTileNearTheSelectedBarrack(_createdGroundTileModels);
 
             if (emptyGroundTile != null)
             {
@@ -178,7 +194,9 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
                 IProduct product = new SoldierUnit("Soldier Unit", ProductType.Soldier, false, 1f);
                 var createdProduct = ViewFactory.Create<IProduct, SoldierViewModel>(product, Resources.Load<GameObject>("Prefabs/SoldierUnit"), null);
                 createdProduct.name = "SoldierUnit";
-                createdProduct.GetComponent<SoldierViewModel>().SetPosition(new Vector2(emptyGroundTile.transform.position.x, emptyGroundTile.transform.position.y));
+                SoldierViewModel soldierViewModel = createdProduct.GetComponent<SoldierViewModel>();
+                soldierViewModel.SetPosition(new Vector2(emptyGroundTile.transform.position.x, emptyGroundTile.transform.position.y));
+                soldierViewModel.SetCurrentGroundTile(emptyGroundTile);
             }
             else
             {
@@ -186,5 +204,27 @@ public class GameBoardViewModel : Singleton<GameBoardViewModel>
             }
 
         }
+    }
+
+    /// <summary>
+    /// Get walkable map for A* Algorithm for pathfinding
+    /// </summary>
+    /// <returns></returns>
+    public int[][] GetWalkableStatusMap()
+    {
+        int[][] map = new int[_width][];
+
+        for (int i = 0; i < _width; i++)
+        {
+            for (int j = 0; j < _height; j++)
+            {
+                map[i] = new int[_height];
+                map[i][j] = _createdGroundTileModels[i, j].IsWalkable ? 0 : 1;
+
+                //Debug.Log("Name: "+ _createdGroundTileModels[i, j].name + " ISWalkable:" + map[i][j]);
+            }
+        }
+
+        return map;
     }
 }
